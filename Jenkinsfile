@@ -4,6 +4,9 @@ pipeline {
     environment {
         DOCKERHUB_USER = 'amitupadhyay16'
         IMAGE_NAME = 'fastapi-demo'
+        CONTAINER_NAME = 'fastapi-demo'
+        HOST_PORT = '8090'        // Jenkins uses 8080, so deploy on 8090
+        CONTAINER_PORT = '8000'   // Port your FastAPI app listens on inside container
     }
 
     stages {
@@ -30,6 +33,18 @@ pipeline {
                     bat "docker tag %IMAGE_NAME%:latest %DOCKERHUB_USER%/%IMAGE_NAME%:latest"
                     bat "docker push %DOCKERHUB_USER%/%IMAGE_NAME%:latest"
                 }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Stop and remove existing container if running
+                bat """
+                docker stop %CONTAINER_NAME% || exit 0
+                docker rm %CONTAINER_NAME% || exit 0
+                docker pull %DOCKERHUB_USER%/%IMAGE_NAME%:latest
+                docker run -d --restart always --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %DOCKERHUB_USER%/%IMAGE_NAME%:latest
+                """
             }
         }
     }
