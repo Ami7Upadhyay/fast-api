@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'amitupadhyay16'
+        DOCKERHUB_USER = 'AmitUpadhyay16'
         IMAGE_NAME = 'fastapi-demo'
     }
 
