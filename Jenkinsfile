@@ -1,41 +1,45 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_USER = 'AmitUpadhyay16'
+        IMAGE_NAME = 'fastapi-demo'
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Ami7Upadhyay/fast-api.git'
+                git branch: 'main', url: 'https://github.com/Ami7Upadhyay/fast-api.git'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'docker build -t fastapi-demo:latest .'
+                bat "docker build -t %IMAGE_NAME%:latest ."
             }
         }
 
         stage('Test') {
             steps {
-                sh 'pytest || true'  // skip failing tests for demo
+                // only works if pytest installed in image or on agent
+                bat 'pytest || exit 0'
             }
         }
 
         stage('Push Image') {
             steps {
-                sh 'docker tag fastapi-demo:latest myregistry.local:5000/fastapi-demo:latest'
-                sh 'docker push myregistry.local:5000/fastapi-demo:latest'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                    bat "docker tag %IMAGE_NAME%:latest %DOCKERHUB_USER%/%IMAGE_NAME%:latest"
+                    bat "docker push %DOCKERHUB_USER%/%IMAGE_NAME%:latest"
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh '''
-                ssh user@your-server "
-                  docker pull myregistry.local:5000/fastapi-demo:latest &&
-                  docker stop fastapi-demo || true &&
-                  docker rm fastapi-demo || true &&
-                  docker run -d --name fastapi-demo -p 8000:8000 myregistry.local:5000/fastapi-demo:latest
-                "
+                bat '''
+                ssh user@your-server "docker pull %DOCKERHUB_USER%/%IMAGE_NAME%:latest && docker stop fastapi-demo || true && docker rm fastapi-demo || true && docker run -d --name fastapi-demo -p 8000:8000 %DOCKERHUB_USER%/%IMAGE_NAME%:latest"
                 '''
             }
         }
