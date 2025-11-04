@@ -1,5 +1,10 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-south-1
+  privileged: true  # allow
+  
 phases:
   pre_build:
     commands:
