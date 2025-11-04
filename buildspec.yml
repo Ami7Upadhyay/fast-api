@@ -12,7 +12,7 @@ phases:
       - aws --version
       # Replace deprecated get-login with get-login-password
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 123456789012.dkr.ecr.ap-south-1.amazonaws.com
-      - REPOSITORY_URI=123456789012.dkr.ecr.us-east-1.amazonaws.com/fastapi-app
+      - REPOSITORY_URI=123456789012.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
   build:
