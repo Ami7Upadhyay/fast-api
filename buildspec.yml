@@ -8,14 +8,23 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "=== DEBUG START ==="
       - aws --version
       - docker --version
-      - docker ps
-      # Replace deprecated get-login with get-login-password
+      - docker ps || echo "Docker daemon not running"
+      - echo "Current AWS region: $AWS_DEFAULT_REGION"
+      - aws sts get-caller-identity || echo "AWS credentials not working"
+      - echo "Checking repository existence..."
+      - aws ecr describe-repositories --repository-names fastapi-app --region $AWS_DEFAULT_REGION || echo "ECR repository not found"
+      - echo "Checking ECR auth token..."
+      - TOKEN_LENGTH=$(aws ecr get-login-password --region $AWS_DEFAULT_REGION | wc -c)
+      - echo "ECR token length: $TOKEN_LENGTH"
+      - echo "Attempting Docker login..."
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 123456789012.dkr.ecr.ap-south-1.amazonaws.com
       - REPOSITORY_URI=123456789012.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "=== DEBUG END ==="
+
 
   build:
     commands:
