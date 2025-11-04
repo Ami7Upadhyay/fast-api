@@ -3,18 +3,16 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: ap-south-1
-  privileged: true  # required for Docker commands
-
+  privileged: true  # allow
+  
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
       - docker --version
-      - docker ps   # ✅ Check if Docker daemon is running
-      - aws sts get-caller-identity   # optional: verify IAM role
-      - echo "Current AWS region: $AWS_DEFAULT_REGION"
-      - aws ecr describe-repositories --region $AWS_DEFAULT_REGION
+      - docker ps
+      # Replace deprecated get-login with get-login-password
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 123456789012.dkr.ecr.ap-south-1.amazonaws.com
       - REPOSITORY_URI=123456789012.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
