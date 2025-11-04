@@ -11,7 +11,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - docker --version
-      - docker ps     # ✅ Check if Docker daemon is running
+      - docker ps   # ✅ Check if Docker daemon is running
       - aws sts get-caller-identity   # optional: verify IAM role
       - echo "Current AWS region: $AWS_DEFAULT_REGION"
       - aws ecr describe-repositories --region $AWS_DEFAULT_REGION
