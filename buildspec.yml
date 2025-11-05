@@ -11,7 +11,7 @@ phases:
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - docker --version
-      - echo "Current AWS region: $AWS_DEFAULT_REGION"
+      - echo "Current AWS region $AWS_DEFAULT_REGION"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 123456789012.dkr.ecr.ap-south-1.amazonaws.com
       - REPOSITORY_URI=123456789012.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
