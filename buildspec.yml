@@ -3,39 +3,30 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: ap-south-1
-  privileged: true  # allows Docker commands
+  privileged: true
 
 phases:
   pre_build:
     commands:
-      - echo "=== DEBUG START ==="
+      - echo "Logging in to Amazon ECR..."
       - aws --version
       - docker --version
-      - docker ps || echo "Docker daemon not running"
-      - aws sts get-caller-identity || echo "AWS credentials not working"
-      - echo "Checking repository existence..."
-      - aws ecr describe-repositories --repository-names fastapi-app --region $AWS_DEFAULT_REGION || echo "ECR repository not found"
-      - echo "Checking ECR auth token..."
-      - TOKEN_LENGTH=$(aws ecr get-login-password --region $AWS_DEFAULT_REGION | wc -c)
-      - echo "ECR token length: $TOKEN_LENGTH"
-      - echo "Attempting Docker login..."
+      - echo "Current AWS region: $AWS_DEFAULT_REGION"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 123456789012.dkr.ecr.ap-south-1.amazonaws.com
       - REPOSITORY_URI=123456789012.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo "=== DEBUG END ==="
 
   build:
     commands:
-      - echo "Building the Docker image..."
+      - echo "Building Docker image..."
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo "Pushing the Docker image..."
+      - echo "Pushing Docker image..."
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "Writing image definitions file..."
       - printf '[{"name":"fastapi-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
