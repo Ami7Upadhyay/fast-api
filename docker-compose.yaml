@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  python-fastapi:
+    build:
+      context: .
+
+    container_name: docker-compose-fast-api
+    
+    ports:
+      - "8091:8000"
