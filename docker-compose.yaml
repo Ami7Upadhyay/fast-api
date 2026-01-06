@@ -1,11 +1,33 @@
 version: '3.9'
 
 services:
-  python-fastapi:
+  fastapi:
     build:
       context: .
 
-    container_name: docker-compose-fast-api
+    container_name: fast-api-container
     
     ports:
       - "8091:8000"
+
+    depends_on:
+      - db 
+
+    restart: always
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: fastapi
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sqdok
+    ports:
+      - "5432:5432"
+    restart: always 
+
+volumes:
+    postgres_data:
